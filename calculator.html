@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>My Calculator</title>
+
+  <style>
+    /* ── Page background ── */
+    body {
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ── The calculator box ── */
+    .calculator {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 12px;
+      width: 280px;
+    }
+
+    /* ── The screen where numbers show up ── */
+    #screen {
+      background-color: #fff;
+      text-align: right;
+      padding: 12px 16px;
+      font-size: 28px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+
+      /* Makes long numbers scroll instead of overflow */
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    /* ── The grid of buttons ── */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+      gap: 10px;
+    }
+
+    /* ── Every button ── */
+    button {
+      padding: 18px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #444;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    button:active {
+      transform: scale(0.95); /* tiny shrink when clicked */
+    }
+
+    /* ── Orange color for operator buttons (+, -, *, /) ── */
+    .operator {
+      background-color: #f5a623;
+    }
+
+    /* ── Red for the Clear button ── */
+    .clear {
+      background-color: #e74c3c;
+    }
+
+    /* ── Green for the Equals button ── */
+    .equals {
+      background-color: #27ae60;
+    }
+
+    /* ── Make the 0 button span 2 columns ── */
+    .zero {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="calculator">
+
+    <!-- The display screen -->
+    <div id="screen">0</div>
+
+    <!-- All the buttons -->
+    <div class="buttons">
+
+      <!-- Row 1 -->
+      <button class="clear"    onclick="clearScreen()">AC</button>
+      <button class="operator" onclick="deleteLast()">⌫</button>
+      <button class="operator" onclick="pressOperator('%')">%</button>
+      <button class="operator" onclick="pressOperator('/')">÷</button>
+
+      <!-- Row 2 -->
+      <button onclick="pressNumber('7')">7</button>
+      <button onclick="pressNumber('8')">8</button>
+      <button onclick="pressNumber('9')">9</button>
+      <button class="operator" onclick="pressOperator('*')">×</button>
+
+      <!-- Row 3 -->
+      <button onclick="pressNumber('4')">4</button>
+      <button onclick="pressNumber('5')">5</button>
+      <button onclick="pressNumber('6')">6</button>
+      <button class="operator" onclick="pressOperator('-')">−</button>
+
+      <!-- Row 4 -->
+      <button onclick="pressNumber('1')">1</button>
+      <button onclick="pressNumber('2')">2</button>
+      <button onclick="pressNumber('3')">3</button>
+      <button class="operator" onclick="pressOperator('+')">+</button>
+
+      <!-- Row 5 -->
+      <button class="zero" onclick="pressNumber('0')">0</button>
+      <button onclick="pressDot()">.</button>
+      <button class="equals" onclick="calculate()">=</button>
+
+    </div>
+  </div>
+
+  <script>
+    // This variable holds what's currently shown on screen
+    let currentInput = "";
+
+    // ── Show a value on the screen ──────────────────────────────
+    function updateScreen(value) {
+      document.getElementById("screen").textContent = value;
+    }
+
+    // ── When a number button is pressed ─────────────────────────
+    function pressNumber(num) {
+      // If screen shows "0", replace it instead of adding to it
+      if (currentInput === "0") {
+        currentInput = num;
+      } else {
+        currentInput = currentInput + num;
+      }
+      updateScreen(currentInput);
+    }
+
+    // ── When an operator button is pressed (+, -, *, /, %) ──────
+    function pressOperator(op) {
+      // Don't allow two operators in a row
+      if (currentInput === "") return;
+
+      currentInput = currentInput + " " + op + " ";
+      updateScreen(currentInput);
+    }
+
+    // ── When the dot (.) button is pressed ──────────────────────
+    function pressDot() {
+      // Don't add a second dot to the same number
+      // Split by spaces and check the last part
+      let parts = currentInput.split(" ");
+      let lastPart = parts[parts.length - 1];
+
+      if (lastPart.includes(".")) return;
+
+      // If nothing typed yet, start with "0."
+      if (currentInput === "") {
+        currentInput = "0.";
+      } else {
+        currentInput = currentInput + ".";
+      }
+
+      updateScreen(currentInput);
+    }
+
+    // ── When AC (clear) is pressed ───────────────────────────────
+    function clearScreen() {
+      currentInput = "";
+      updateScreen("0");
+    }
+
+    // ── When ⌫ (backspace) is pressed ───────────────────────────
+    function deleteLast() {
+      // Remove the last character
+      currentInput = currentInput.slice(0, -1);
+
+      // If nothing left, show 0
+      if (currentInput === "") {
+        updateScreen("0");
+      } else {
+        updateScreen(currentInput);
+      }
+    }
+
+    // ── When = is pressed ────────────────────────────────────────
+    function calculate() {
+      if (currentInput === "") return;
+
+      try {
+        // eval() reads the math expression as a string and computes it
+        // e.g. "3 + 5" becomes 8
+        let result = eval(currentInput);
+
+        // Round to avoid floating point weirdness like 0.1 + 0.2 = 0.30000000004
+        result = parseFloat(result.toFixed(10));
+
+        currentInput = String(result);
+        updateScreen(currentInput);
+
+      } catch (error) {
+        // If the expression is invalid, show Error
+        updateScreen("Error");
+        currentInput = "";
+      }
+    }
+  </script>
+
+</body>
+</html>
